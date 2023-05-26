@@ -14,12 +14,12 @@ const Book = ({ book, history }) => {
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    const onCart = (book) => {
+    const onCart = async(book) => {
         if (uid) {
             if(window.confirm(book.title + '장바구니에 등록하실래요?')){
                 //장바구니 등록
                 const date=moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-                set(ref(db, `cart/${uid}/${book.isbn}`),
+                await set(ref(db, `cart/${uid}/${book.isbn}`),
                     {...book, date:date});
                     alert('장바구니 등록성공!');
                     handleClose();

@@ -3,11 +3,13 @@ import { useState } from 'react'
 import {Col, Row, Card, Form, InputGroup, Button} from 'react-bootstrap'
 import { app } from '../firebaseInit'
 import { getFirestore, doc, getDoc, setDoc} from 'firebase/firestore'
+import { getStorage, uploadBytes, ref, getDownloadURL } from 'firebase/storage'
 
-const MyPage = () => {
+const MyPage = ({ history }) => {
     const [loading, setLoading] = useState(false);
     const uid=sessionStorage.getItem("uid");
     const db = getFirestore(app);
+    const storage = getStorage(app);
     const [image, setImage] = useState('https://via.placeholder.com/200x200');
     const [file, setFile] = useState(null);
 
@@ -37,9 +39,20 @@ const MyPage = () => {
         setLoading(false);
     }
 
-    const onUpdate = () => {
+    const onUpdate = async() => {
         if(!window.confirm('수정된 내용을 저장하실래요?')) return;
-        setDoc(doc(db, 'user', uid), form);
+        setLoading(true);
+        if(file){
+            const snapshot = await uploadBytes(
+                ref(storage,`/photo/${Date.now()}.jpg`),file);
+            const url =await getDownloadURL(snapshot.ref);
+            await setDoc(doc(db,'user',uid),{...form, photo:url});
+        }else{
+            await setDoc(doc(db,'user',uid),form);
+        }
+
+        setLoading(false);
+        history.pusg('/')
     }
 
     useEffect(()=>{
